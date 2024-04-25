@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.uic import loadUi
 
@@ -30,18 +32,18 @@ class MainWindow(QMainWindow):
             self.simulation_win = SimulationWindow(self)
             self.simulation_win.show()
             self.hide()
-        except Exception as e:
-            print(f"Error al abrir la ventana: {e}")
+        except:
+            print(f"Error al abrir la ventana de simulación:\n{traceback.format_exc()}")
 
     def cerrar_ventana_simulacion(self) -> None:
         try:
             self.simulation_win.close()
             self.show()
-        except Exception as e:
-            print(f"Error al cerrar la ventana: {e}")
+        except:
+            print(f"Error al cerrar la ventana de simulación:\n{traceback.format_exc}")
 
     def cerrar_app(self) -> None:
         try:
             self.close()
-        except Exception as e:
-            print(f"Error al cerrar la aplicación: {e}")
+        except:
+            print(f"Error al cerrar la aplicación:\n{traceback.format_exc}")
