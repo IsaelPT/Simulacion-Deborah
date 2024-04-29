@@ -1,22 +1,31 @@
 import time
-from simpy import Environment, SimPyException
-from uci.procesar_datos import *
+import threading
+
+import pandas as pd
+
+from simpy import Environment
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 
-import pandas as pd
-import threading
+from uci.procesar_datos import *
 
 
 class Uci(threading.Thread):
     def __init__(self, path: str, diagnostico: list, porcientos: list) -> None:
         super().__init__()
+
         class Signal(QObject):
             signal_progBarr = QtCore.pyqtSignal(int)
+            """Usado para actualizar con un valor la barra de progreso de simulación"""
             signal_terminated = QtCore.pyqtSignal(bool)
+            """Usado para enviar señal cuando termine la simulación"""
+            signal_tiempo = QtCore.pyqtSignal(float)
+            """Usado para el tiempo de simulación resultante."""
+
+        # Se inicializan las variables necesarias para la simulacion
         self.signal = Signal()
         self.index = 0
-        self.is_running = True
         self.env = Environment()
 
         # Se inicializan las variables necesarias para la simulacion
@@ -36,24 +45,26 @@ class Uci(threading.Thread):
         self.env.process(self.entrada_paciente(path))
 
     def run(self):
-        print("Comenzando simulación...")
+        print("-- Comenzando simulación --")
         t_comienzo = time.time()
         for i in range(17881):
             self.signal.signal_progBarr.emit(i)
-            #time.sleep(0.001)
-            self.env.run(until=i+1)
-            if  self._stop_event.is_set():
+            self.env.run(until=i + 1)
+            if self._stop_event.is_set():
                 break
         self.signal.signal_terminated.emit(True)
+        self.signal.signal_progBarr.emit(0)  # Volviendo a 0 la barra de progreso.
         t_final = time.time()
-        print(f"La simulación terminó a los {(t_final - t_comienzo):.2f} seg.")
-
+        tiempo: float = round((t_final - t_comienzo), 1)
+        self.signal.signal_tiempo.emit(tiempo)
+        print(f"La simulación terminó a los {tiempo} segundos.")
 
     def stop(self):
-        print("Deteniendo la simulación....")
+        print("-- Deteniendo la simulación --")
         self._stop_event.set()
+
     def entrada_paciente(self, path: str):
-        """Funcion que controla la entrada de cada paciente al hospital"""
+        """Controla la entrada de cada paciente al hospital."""
 
         # Se obtienen los datos del archivo de entrada y se agregan a la cola de pacientes
         gen_fecha_ing = get_fecha_ingreso(path)
@@ -75,7 +86,7 @@ class Uci(threading.Thread):
                 break
 
     def entrada_paciente_uci(self, path: str, paciente: int):
-        """Funcion que controla el transcito de cada paciente dentro del hospital"""
+        """Funcion que controla el tránsito de cada paciente dentro del hospital."""
 
         # Se inicializan los generadores necesarios
         gen_fecha_ing_uci = get_fecha_ing_uci(path)
