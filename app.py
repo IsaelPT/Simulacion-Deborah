@@ -7,8 +7,8 @@ from qt_py.main_window import MainWindow
 
 class Application(QApplication):
     """
-    Clase Principal. Le  inicio a la aplicación:
-    Cuando se ejecute esta clase, se inicia la aplicación trayendo la ventana del Menú Principal.
+    Clase Principal. Le da inicio a la aplicación:
+    Cuando se ejecute, se inicia la aplicación trayendo la ventana del Menú Principal.
     """
 
     def __init__(self) -> None:
@@ -22,6 +22,10 @@ class Application(QApplication):
         sys.exit(self.exec_())
 
 
-if __name__ == "__main__":
+def main() -> None:
     app = Application()
     app.run()
+
+
+if __name__ == "__main__":
+    main()
